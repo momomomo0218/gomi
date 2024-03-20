@@ -1,44 +1,34 @@
 import requests
-from datetime import datetime
+import datetime
 
-# LINE Notifyのアクセストークンを設定してください
-access_token = "d4DssQgrmBdaTS7WG1W3Cb0pGY6FJYm0Vor03MaeJ7x"
+# LINE Notifyのトークンをここに設定してください
+LINE_NOTIFY_TOKEN = "d4DssQgrmBdaTS7WG1W3Cb0pGY6FJYm0Vor03MaeJ7x"
 
-# ゴミの日の曜日ごとの通知メッセージを定義します
-garbage_days = {
-    "月曜日": "燃えるゴミの日です。",
-    "火曜日": "資源ごみの日です。",
-    "水曜日": "燃えるゴミの日です。",
-    "木曜日": "不燃ごみの日です。",
-    "金曜日": "資源ごみの日です。",
-    "土曜日": "燃えるゴミの日です。",
-    "日曜日": "不燃ごみの日です。"
+# 沖縄市のゴミ収集スケジュール
+garbage_schedule = {
+    "Monday": "可燃ゴミ",
+    "Tuesday": "プラスチックリサイクルゴミ",
+    "Wednesday": "紙リサイクルゴミ",
+    "Thursday": "不燃ゴミ",
+    "Friday": "ガラスリサイクルゴミ",
+    "Saturday": "缶リサイクルゴミ",
+    "Sunday": "回収なし"
 }
 
-# 今日の曜日を取得します
-today = datetime.now().strftime("%A")
+# 現在の曜日を取得
+today = datetime.datetime.now().strftime("%A")
 
-# 曜日に対応するメッセージを取得します
-message = garbage_days.get(today, "今日はゴミの日ではありません。")
+# 今日のゴミの種類を取得
+garbage_type = garbage_schedule.get(today, "不明")
 
-# LINE NotifyのAPIエンドポイントを設定します
-url = "https://notify-api.line.me/api/notify"
+# 通知メッセージを作成
+message = f"今日の沖縄市のゴミ収集は: {garbage_type}"
 
-# アクセストークンをヘッダーに設定します
-headers = {
-    "Authorization": f"Bearer {access_token}"
-}
+# LINE Notifyを介してメッセージを送信
+headers = {"Authorization": f"Bearer {LINE_NOTIFY_TOKEN}"}
+payload = {"message": message}
+response = requests.post("https://notify-api.line.me/api/notify", headers=headers, data=payload)
 
-# メッセージをペイロードに設定します
-payload = {
-    "message": message
-}
+# レスポンスを表示
+print(response.text)
 
-# 通知を送信します
-response = requests.post(url, headers=headers, data=payload)
-
-# 通知が成功したかどうかを確認します
-if response.status_code == 200:
-    print(f"{today}のゴミの日を通知しました！")
-else:
-    print(f"通知の送信中にエラーが発生しました。ステータスコード: {response.status_code}")
